@@ -2,11 +2,11 @@ import { TrainingService } from './../training/training.service';
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Router } from '@angular/router';
+import { AngularFireAuth } from 'angularfire2/auth';
 
 import { AuthData } from './auth.data.model';
 import { User } from "./user.model";
-import { AngularFireAuth } from 'angularfire2/auth';
-
+import { UIService } from '../shared/ui.service';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +16,8 @@ export class AuthService {
     constructor(
         private router: Router,
         private afAuth: AngularFireAuth,
-        private trainingService: TrainingService
+        private trainingService: TrainingService,      
+        private uiService: UIService
     ) { }
 
     initAuthListener() {
@@ -35,26 +36,30 @@ export class AuthService {
     }
 
     registerUser(authData: AuthData) {
+        this.uiService.loadingStateChanged.next(true);
         this.afAuth.auth.createUserWithEmailAndPassword(
             authData.email,
             authData.password
         ).then(result => {
-            console.log(result);
+            this.uiService.loadingStateChanged.next(false);
         })
             .catch(error => {
-                console.log(error);
+                this.uiService.loadingStateChanged.next(false);
+                this.uiService.showSnackbar(error.message, null, 3000);               
             });
     }
 
     login(authData: AuthData) {
+        this.uiService.loadingStateChanged.next(true);
         this.afAuth.auth.signInWithEmailAndPassword(
             authData.email,
             authData.password
         ).then(result => {
-            console.log(result);
+            this.uiService.loadingStateChanged.next(false);
         })
             .catch(error => {
-                console.log(error);
+                this.uiService.loadingStateChanged.next(false);
+                this.uiService.showSnackbar(error.message, null, 3000); 
             });
     }
 
